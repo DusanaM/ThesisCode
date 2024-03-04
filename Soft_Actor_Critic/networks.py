@@ -44,7 +44,6 @@ class CriticNetwork(nn.Module):
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu') # device for our computation, if we have gpu, we want to use it!
         self.to(self.device) # we want to send our entire network to our device
 
-
     def feed_forward(self, state, action):
         action_value = self.fc1(T.cat([state, action], dim=1))
         action_value = F.relu(action_value) # activation function
