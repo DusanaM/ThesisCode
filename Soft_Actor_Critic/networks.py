@@ -149,7 +149,7 @@ class ActorNetwork(nn.Module):
         if reparametrize:
             actions = probs.rsample() # this is with noise
         else:
-            actions = probs.sample() # this is witout the noise
+            actions = probs.sample() # this is without the noise
 
         # actions are the one that are sampled, and action are those that are "processed" futher
 

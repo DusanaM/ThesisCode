@@ -23,6 +23,7 @@ class ReplyBuffer():
             self.next_state_memory[idx] = next_state
             self.action_memory[idx] = action
             self.reward_memory[idx] = reward
+            self.terminal_memory[idx] = done
 
             self.memory_counter += 1
 
