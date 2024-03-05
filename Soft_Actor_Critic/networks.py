@@ -36,8 +36,8 @@ class CriticNetwork(nn.Module):
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims) 
         self.q = nn.Linear(self.fc2_dims, 1) 
 
-        # Overall what just happend is that the input to NN is state and action(s) at that state (input_dims[0] + n_actions). 
-        # This is essentially (state, action) pair. We say n_actions cause we have continous actions so more of them can take place. 
+        # Overall what just happend is that the input to NN is state and action(s) at that state (input_dims[0] + n_actions)
+        # This is essentially (state, action) pair. We say n_actions because we have continous actions so more of them can take place at 1 timestep 
         # Output of NN is a sinlge value of quality of this pair
 
         self.optimizer = optim.Adam(self.parameters(), lr = beta) # self.parameters() are parameters of our deep NN, and it is coming from nn.module
@@ -125,7 +125,7 @@ class ActorNetwork(nn.Module):
         self.mu = nn.Linear(self.fc2_dims, self.n_actions) # each of the possible actions in 1 time step
         self.sigma = nn.Linear(self.fc2_dims, self.n_actions)
 
-        self.optimizer = optim.Adam(self.parameters(), lr=alpha)
+        self.optimizer = optim.Adam(self.parameters(), lr=alpha) # learn more about
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu') # device for our computation, if we have gpu, we want to use it!
         self.to(self.device) # we want to send our entire network to our device
 
@@ -142,6 +142,7 @@ class ActorNetwork(nn.Module):
 
         return mu, sigma
     
+    # write about why is it the normal and not some other distribution!
     def normal_sample(self, state, reparametrize=True): # there are 2 sample functions for the N dist: one gives a sample and the other gives the sample plus some noise (thats when we say reparametrize=True)
         mu, sigma = self.feed_forward(state)
         probs = Normal(mu, sigma)
