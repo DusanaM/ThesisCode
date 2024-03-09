@@ -78,6 +78,8 @@ class SAC_Trader2():
 
 
         spread = self.spread(self.k, self.sigma, risk_aversion_par, timeleft)
+        print("spread", spread)
+
 
         Bid = res_price - spread/2
         Ask = res_price + spread/2
@@ -117,11 +119,11 @@ class SAC_Trader2():
 
 
 
-    def res_price(self, s, q, sigma, gamma, timeleft):
-        return s - q * gamma * sigma**2 * timeleft
+    def res_price(self, s, q, sigma, gamma, delta_t):
+        return s - q * gamma * sigma**2 * delta_t
     
-    def spread(self, k, sigma, gamma, timeleft):
-        return gamma * sigma**2 * timeleft + 2 / gamma * np.log(1 + gamma / k)
+    def spread(self, k, sigma, gamma, delta_t):
+        return gamma * sigma**2 * delta_t + 2 / gamma * np.log(1 + gamma / k)
 
     def lambdaa(self, delta, A, k):
         return A * np.exp(-k * delta)
