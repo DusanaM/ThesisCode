@@ -49,7 +49,7 @@ class SAC_Trader2():
                 reward = change_in_PnL - risk_penalty
                 self.reward_total += reward
 
-                print("here")
+                # print("here")
 
                 self.agent.remember(self.state_before, self.action_before, reward, state_now, timeleft <= 0)
                 self.agent.learn()
@@ -57,7 +57,7 @@ class SAC_Trader2():
 
             explore = random.random() > self.agent.memory.memory_counter / self.agent.memory.memory_size
             print("explore: ", explore)
-            print("counter: ", self.agent.memory.memory_counter, "memory_size: ", self.agent.memory.memory_size)
+            print("counter: ", self.agent.memory.memory_counter)
 
             action = np.array([random.uniform(0,1)]) if explore else self.agent.pick_action(state_now)
 
@@ -70,21 +70,21 @@ class SAC_Trader2():
             action = self.agent.pick_action(state_now)
             
             
-        risk_aversion_par = max(1e-5, ((action + 1)/2))
+        risk_aversion_par = max(1e-5, ((action[0] + 1)/2))
 
 
         res_price = self.res_price(s, self.inventory, self.sigma, risk_aversion_par, timeleft)
-        print("s: ", s, "inventory: ", self.inventory, "sigma: ", self.sigma, "action: ", action, "risk: ", risk_aversion_par, "timeleft: ", timeleft, "res_price: ", res_price)
+        # print("s: ", s, "inventory: ", self.inventory, "sigma: ", self.sigma, "action: ", action, "risk: ", risk_aversion_par, "timeleft: ", timeleft, "res_price: ", res_price)
 
 
         spread = self.spread(self.k, self.sigma, risk_aversion_par, timeleft)
-        print("spread", spread)
+        # print("spread", spread)
 
 
         Bid = res_price - spread/2
         Ask = res_price + spread/2
 
-        print("Bid, Ask: ", (Bid,Ask))
+        # print("Bid, Ask: ", (Bid,Ask))
 
         return Bid, Ask
     
