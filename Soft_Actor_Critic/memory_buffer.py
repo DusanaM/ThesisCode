@@ -17,26 +17,26 @@ class ReplyBuffer():
         
         self.terminal_memory = np.zeros(self.memory_size, dtype=bool) # dont get this
 
-        def store_transition(self, state, action, reward, next_state, done): # done is terminal flag
-            idx = self.memory_counter % self.memory_size  # first available index to store it so when memory_counter goes over (>=) memory_size, then we go from start e.g. 101 % 100 = 1
-            self.state_memory[idx] = state
-            self.next_state_memory[idx] = next_state
-            self.action_memory[idx] = action
-            self.reward_memory[idx] = reward
-            self.terminal_memory[idx] = done
+    def store_transition(self, state, action, reward, next_state, done): # done is terminal flag
+        idx = self.memory_counter % self.memory_size  # first available index to store it so when memory_counter goes over (>=) memory_size, then we go from start e.g. 101 % 100 = 1
+        self.state_memory[idx] = state
+        self.next_state_memory[idx] = next_state
+        self.action_memory[idx] = action
+        self.reward_memory[idx] = reward
+        self.terminal_memory[idx] = done
 
-            self.memory_counter += 1
+        self.memory_counter += 1
 
-        def sample_buffer(self, batch_size): # batch_size is how many experiences we want to use in each iteration of training
-            max_memory_available = min(self.memory_counter, self.memory_size) # this is how much memory we have available (so it is what we have stored (the counter) but it cannot be greater than max what we can store: memory_size)
-            #batch = min(batch, max_memory_available)
-            batch = np.random.choice(max_memory_available, batch_size) # pick a rand numbers up to *max_memory_available*, *batch_size* times 
+    def sample_buffer(self, batch_size): # batch_size is how many experiences we want to use in each iteration of training
+        max_memory_available = min(self.memory_counter, self.memory_size) # this is how much memory we have available (so it is what we have stored (the counter) but it cannot be greater than max what we can store: memory_size)
+        #batch = min(batch, max_memory_available)
+        batch = np.random.choice(max_memory_available, batch_size) # pick a rand numbers up to *max_memory_available*, *batch_size* times 
 
-            states = self.state_memory[batch]
-            next_states = self.next_states[batch]
-            actions = self.actions[batch]
-            rewards = self.rewards[batch]
-            dones = self.terminal_memory[batch] # checks if any of the states were terminating states
-            
-            return states, next_states, actions, rewards, dones
+        states = self.state_memory[batch]
+        next_states = self.next_state_memory[batch]
+        actions = self.action_memory[batch]
+        rewards = self.reward_memory[batch]
+        dones = self.terminal_memory[batch] # checks if any of the states were terminating states
+        
+        return states, next_states, actions, rewards, dones
 

@@ -6,7 +6,7 @@ from memory_buffer import ReplyBuffer
 from networks import ActorNetwork, ValueNetwork, CriticNetwork
 
 class SAC_Agent():
-    def __init__(self, input_dims, alpha=0.003, beta = 0.003, env = None, gamma = 0.99, n_actions = 2, memory_size = 1000000, tau = 0.005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2): 
+    def __init__(self, input_dims, max_action = 1, alpha=0.003, beta = 0.003, gamma = 0.99, n_actions = 2, memory_size = 50000, tau = 0.005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2): 
         # reward scaling is how are we going to account for the entropy in the framework - we scale the rewards in the critic loss function
     
         self.gamma = gamma
@@ -15,7 +15,7 @@ class SAC_Agent():
         self.n_actions = n_actions
         
         self.memory = ReplyBuffer(memory_size, input_dims, n_actions)
-        self.actor = ActorNetwork(alpha, input_dims, max_action = env.action_space.high)
+        self.actor = ActorNetwork(alpha, input_dims, max_action)
         self.critic1 = CriticNetwork(beta, input_dims, n_actions, layer1, layer2, name='critic1')
         self.critic2 = CriticNetwork(beta, input_dims, n_actions, layer1, layer2, name='critic2')
         self.val = ValueNetwork(beta, input_dims, layer1, layer2, name='value')
@@ -25,11 +25,11 @@ class SAC_Agent():
         self.update_pars(tau = 1) # come back to this!
 
     def pick_action(self, observation):
-        state = T.Tensor([observation]).to(self.actor.device) # convert observation to pythorch sensor and send it to the device
+        state = T.Tensor(observation).to(self.actor.device) # convert observation to pythorch sensor and send it to the device
         action, _ = self.actor.normal_sample(state, reparametrize = False) # we dont include the noise
         # here action is array of actions cuz we are dealing with a continuous action space
-        return action.cpu().detach().numpy()[0] # we extract and the selected action as np array
-    
+        return action.cpu().detach().numpy() # we extract and the selected action as np array
+
     def remember(self, state, action, reward, next_state, done):
         self.memory.store_transition(state, action, reward, next_state, done)
 
@@ -53,7 +53,7 @@ class SAC_Agent():
         for name in val_state_dict:
             val_state_dict[name] = tau*val_state_dict[name].clone() + (1-tau)*target_val_state_dict[name].clone()
 
-        self.target_val_state_dict.load_state_dict(val_state_dict)
+        self.target_val.load_state_dict(val_state_dict)
 
     def save_models(self):
         print('.... saving models ....')
@@ -76,7 +76,7 @@ class SAC_Agent():
             # we dont learn as we don't have enough memory saved
             return
         
-        state, action, reward, next_state, done = self.memory.sample_buffer(self.batch_size)
+        state, next_state, action, reward, done = self.memory.sample_buffer(self.batch_size)
 
         action = T.tensor(action, dtype = T.float).to(self.actor.device) 
         reward = T.tensor(reward, dtype = T.float).to(self.actor.device) 

@@ -144,6 +144,8 @@ class ActorNetwork(nn.Module):
     
     # write about why is it the normal and not some other distribution!
     def normal_sample(self, state, reparametrize=True): # there are 2 sample functions for the N dist: one gives a sample and the other gives the sample plus some noise (thats when we say reparametrize=True)
+        # print("state that i put in feed_forward to get mu and sigma: ", state)
+        
         mu, sigma = self.feed_forward(state)
         probs = Normal(mu, sigma)
 
@@ -155,14 +157,22 @@ class ActorNetwork(nn.Module):
         # actions are the one that are sampled, and action are those that are "processed" futher
 
         # we get the action for our agent:
+        # action = T.tanh(actions) # tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
         action = T.tanh(actions)*T.tensor(self.max_action) # tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
         # and mulituplying it with max_action scales it up afterwards
         # we do this since max_action could easly have a value beyond -1 +1
         action.to(self.device)
 
         # this is for the calculation of our loss function, it doesnt go in the calculation of what action to take but the loss function for updating the weights of our deep NN
-        log_probs = probs.log_prob(actions) - T.log(1-action.pow(2) + self.reprar_noise) # this is the formula from the paper: https://arxiv.org/pdf/1812.05905.pdf
-        log_probs = log_probs.sum(1, keepdim = True)
+        # log_probs = probs.log_prob(actions) - T.log(1-action.pow(2) + self.reprar_noise) # this is the formula from the paper: https://arxiv.org/pdf/1812.05905.pdf
+        # log_probs = log_probs.sum(1, keepdim = True)
+
+        # print("action that I pick but not process yet: ", action, " end")
+
+        log_probs = probs.log_prob(actions)
+        log_probs -= T.log(1-action.pow(2) + self.reprar_noise)
+        log_probs = log_probs.sum(dim=-1, keepdim = True)
+
 
         return action, log_probs # The action is the final decision made by the policy (2dim) and log_probs represents the logarithm of the probabilities associated with the sampled action, and it is used for calculating the loss during training
     
