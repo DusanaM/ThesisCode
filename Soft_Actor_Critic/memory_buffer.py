@@ -9,6 +9,7 @@ class ReplyBuffer():
         # n_actions: here we deal with the continuous action env (multiple actions can be taken in one step)
         self.memory_size = memory_size
         self.memory_counter = 0 # keeps track of the first available memory
+        self.idx = 0
 
         self.state_memory = np.zeros((self.memory_size, *input_shape)) # input_shape is just how many features describes our state
         self.next_state_memory = np.zeros((self.memory_size, *input_shape)) 
@@ -18,12 +19,12 @@ class ReplyBuffer():
         self.terminal_memory = np.zeros(self.memory_size, dtype=bool) # dont get this
 
     def store_transition(self, state, action, reward, next_state, done): # done is terminal flag
-        idx = self.memory_counter % self.memory_size  # first available index to store it so when memory_counter goes over (>=) memory_size, then we go from start e.g. 101 % 100 = 1
-        self.state_memory[idx] = state
-        self.next_state_memory[idx] = next_state
-        self.action_memory[idx] = action
-        self.reward_memory[idx] = reward
-        self.terminal_memory[idx] = done
+        self.idx = self.memory_counter % self.memory_size  # first available index to store it so when memory_counter goes over (>=) memory_size, then we go from start e.g. 101 % 100 = 1
+        self.state_memory[self.idx] = state
+        self.next_state_memory[self.idx] = next_state
+        self.action_memory[self.idx] = action
+        self.reward_memory[self.idx] = reward
+        self.terminal_memory[self.idx] = done
 
         self.memory_counter += 1
 
