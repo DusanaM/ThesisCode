@@ -6,7 +6,7 @@ import random
 from sac_agent import SAC_Agent
 
 
-class SAC_Trader2():
+class SAC_Trader():
     def __init__(self, sigma, A, k, dt, agent):
         self.dt = dt
         self.sigma = sigma
