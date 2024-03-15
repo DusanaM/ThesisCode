@@ -59,11 +59,13 @@ class SAC_Trader():
             
             print("inventory: ", self.inventory, "reward: ", self.reward_total)
 
-            explore = self.agent.memory.memory_counter / self.agent.memory.memory_size < random.random()
-            print("mem counter: ", self.agent.memory.memory_counter, "mem size: ", self.agent.memory.memory_size, "chance of EXPLOITing: ", self.agent.memory.memory_counter / self.agent.memory.memory_size)
-            print("explore: ", explore)
+            # explore = self.agent.memory.memory_counter / self.agent.memory.memory_size < random.random()
+            # print("mem counter: ", self.agent.memory.memory_counter, "mem size: ", self.agent.memory.memory_size, "chance of EXPLOITing: ", self.agent.memory.memory_counter / self.agent.memory.memory_size)
+            # print("explore: ", explore)
 
-            action = np.array([random.uniform(0,1)]) if explore else self.agent.pick_action(state_now)
+            # action = np.array([random.uniform(0,1)]) if explore else self.agent.pick_action(state_now)
+
+            action = self.agent.pick_action(state_now)
 
             self.state_before = state_now
             self.PnL_before = PnL
