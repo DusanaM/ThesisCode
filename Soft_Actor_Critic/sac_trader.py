@@ -52,7 +52,9 @@ class SAC_Trader():
                 # print("here")
 
                 self.agent.remember(self.state_before, self.action_before, reward, state_now, timeleft <= 0)
-                self.agent.learn()
+
+                if timeleft <= self.dt:
+                    self.agent.learn()
 
             
             print("inventory: ", self.inventory, "reward: ", self.reward_total)
