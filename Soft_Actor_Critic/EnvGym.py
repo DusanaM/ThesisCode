@@ -11,9 +11,10 @@ class MyEnv(Env):
 
    def __init__(self, s0, sigma, dt, N_prices, A, k):       
 
-    #    self.action_space = Box(-10.0, 10.0, (2,))
+    #    self.action_space = Box(96.0, 104.0, (1,))
        # a1 is reservation price and a2 is the spread
-       self.action_space = Box(low=np.array([96.0, 1.0]), high=np.array([104.0, 2.0]), dtype=np.float32)
+       self.action_space = Box(low=np.array([0.9, 1.0]), high=np.array([1, 1]), dtype=np.float32)
+    #    self.action_space = Box(low=np.array([96.0]), high=np.array([104.0]), dtype=np.float32)
     #    print(type(self.action_space))
 
 
@@ -42,7 +43,7 @@ class MyEnv(Env):
            ds = self.sigma * W[i-1]
            self.s[i] = self.s[i-1] + ds
 
-       self.state_now = (self.s0, 1, 0) # random initial state: (s0, time_left, inventory)
+       self.state_now = (self.s0/100, 1, 0) # random initial state: (s0, time_left, inventory)
        self.PnL_now = 0
        self.cash = 0
        self.inventory = 0
@@ -53,15 +54,23 @@ class MyEnv(Env):
    def update_state_based_on_spreads(self, state_now, a1, a2):
         # Update self.s, the internal state, based on a1 and a2.
         # implements p(s_{t+1} | s_t, a_t)
+        # a2 = 1.5
 
-        Bid = (a1 - a2/2)
-        Ask = (a1 + a2/2) 
+        print("I recieve action: ", a1, a2)
 
-        print("Bid: ", round(Bid, 2), " Price: ", round(state_now[0], 2), " Ask: ", round(Ask, 2))
+        a1 = 105*a1
+        a2 = 2*a2
+
+        print("I transform action: ", a1, a2)
+
+        Bid = ( (a1) - a2/2)
+        Ask = ((a1) + a2/2) 
+
+        print("Bid: ", round(Bid, 2), " Price: ", round(state_now[0]*100, 2), " Ask: ", round(Ask, 2))
 
 
-        delta_b = state_now[0] - Bid
-        delta_a = Ask - state_now[0]
+        delta_b = state_now[0]*100 - Bid
+        delta_a = Ask - state_now[0]*100
 
         # prob of arrivals:
         prob_bid = self.lambdaa(delta_b, self.A, self.k)*self.dt
@@ -96,7 +105,7 @@ class MyEnv(Env):
         self.time_left -= self.dt
         self.done = self.time_left <= self.dt
 
-        state_next = (self.s[int((1-self.time_left)*self.N_prices)], self.time_left, abs(self.inventory)/100)
+        state_next = (self.s[int((1-self.time_left)*self.N_prices)]/100, self.time_left, abs(self.inventory)/100)
 
     
         return state_next # s_{t+1}

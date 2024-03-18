@@ -6,18 +6,19 @@ from memory_buffer import ReplyBuffer
 from networks import ActorNetwork, ValueNetwork, CriticNetwork
 
 class SAC_Agent():
-    def __init__(self, input_dims, alpha=0.001, beta = 0.003, gamma = 0.99, n_actions = 2, memory_size = 50000, tau = 0.005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2, env=None): 
+    def __init__(self, input_dims, alpha=0.001, beta = 0.003, gamma = 0.99, memory_size = 50000, tau = 0.005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2, env=None): 
         # reward scaling is how are we going to account for the entropy in the framework - we scale the rewards in the critic loss function
     
         self.gamma = gamma
         self.tau = tau
         self.batch_size = batch_size
-        self.n_actions = n_actions
+        self.n_actions = env.action_space.shape[0]
+        print("br actions: ", self.n_actions)
         
-        self.memory = ReplyBuffer(memory_size, input_dims, n_actions)
-        self.actor = ActorNetwork(alpha, input_dims, max_action = env.action_space.high, min_action = env.action_space.low)
-        self.critic1 = CriticNetwork(beta, input_dims, n_actions, layer1, layer2, name='critic1')
-        self.critic2 = CriticNetwork(beta, input_dims, n_actions, layer1, layer2, name='critic2')
+        self.memory = ReplyBuffer(memory_size, input_dims, self.n_actions)
+        self.actor = ActorNetwork(alpha, input_dims, max_action = env.action_space.high, min_action = env.action_space.low, n_actions = self.n_actions)
+        self.critic1 = CriticNetwork(beta, input_dims, self.n_actions, layer1, layer2, name='critic1')
+        self.critic2 = CriticNetwork(beta, input_dims, self.n_actions, layer1, layer2, name='critic2')
         self.val = ValueNetwork(beta, input_dims, layer1, layer2, name='value')
         self.target_val = ValueNetwork(beta, input_dims, layer1, layer2, name='target_val')
 
@@ -28,7 +29,7 @@ class SAC_Agent():
         state = T.Tensor(observation).to(self.actor.device) # convert observation to pythorch sensor and send it to the device
         action, _ = self.actor.normal_sample(state, reparametrize = False) # we dont include the noise
         # here action is array of actions cuz we are dealing with a continuous action space
-        return action.cpu().detach().numpy() # we extract and the selected action as np array
+        return abs(action.cpu().detach().numpy()) # we extract and the selected action as np array
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.store_transition(state, action, reward, next_state, done)
