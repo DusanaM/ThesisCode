@@ -13,7 +13,7 @@ class MyEnv(Env):
 
     #    self.action_space = Box(96.0, 104.0, (1,))
        # a1 is reservation price and a2 is the spread
-       self.action_space = Box(low=np.array([0.9, 1.0]), high=np.array([1, 1]), dtype=np.float32)
+       self.action_space = Box(low=np.array([0.9, 1.0]), high=np.array([1.0, 1.0]), dtype=np.float32)
     #    self.action_space = Box(low=np.array([96.0]), high=np.array([104.0]), dtype=np.float32)
     #    print(type(self.action_space))
 
@@ -58,7 +58,7 @@ class MyEnv(Env):
 
         print("I recieve action: ", a1, a2)
 
-        a1 = 105*a1
+        a1 = 102.0*a1
         a2 = 2*a2
 
         print("I transform action: ", a1, a2)

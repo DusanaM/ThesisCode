@@ -173,8 +173,8 @@ class ActorNetwork(nn.Module):
 
         # ------------- me trying smth end --------------------------------
 
-        # action = T.tanh(actions)*T.tensor(0.5*(self.max_action-self.min_action)) +  T.tensor(0.5*(self.max_action+self.min_action))# tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
-        action = abs(T.tanh(actions))*T.tensor(self.max_action)
+        action = T.tanh(actions)*T.tensor(0.5*(self.max_action-self.min_action)) +  T.tensor(0.5*(self.max_action+self.min_action))# tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
+        # action = abs(T.tanh(actions))*T.tensor(self.max_action)
         # action = abs(T.tanh(actions))
         
         # and mulituplying it with max_action scales it up afterwards
