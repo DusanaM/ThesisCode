@@ -13,7 +13,7 @@ class MyEnv(Env):
 
     #    self.action_space = Box(96.0, 104.0, (1,))
        # a1 is reservation price and a2 is the spread
-       self.action_space = Box(low=np.array([0.9, 1.0]), high=np.array([1.0, 1.0]), dtype=np.float32)
+       self.action_space = Box(low=np.array([0.94, 1.0]), high=np.array([1.0, 1.0]), dtype=np.float32)
     #    self.action_space = Box(low=np.array([96.0]), high=np.array([104.0]), dtype=np.float32)
     #    print(type(self.action_space))
 
@@ -56,17 +56,17 @@ class MyEnv(Env):
         # implements p(s_{t+1} | s_t, a_t)
         # a2 = 1.5
 
-        print("I recieve action: ", a1, a2)
+        # print("I recieve action: ", a1, a2)
 
-        a1 = 102.0*a1
+        a1 = 103.0*a1
         a2 = 2*a2
 
-        print("I transform action: ", a1, a2)
+        # print("I transform action: ", a1, a2)
 
         Bid = ( (a1) - a2/2)
         Ask = ((a1) + a2/2) 
 
-        print("Bid: ", round(Bid, 2), " Price: ", round(state_now[0]*100, 2), " Ask: ", round(Ask, 2))
+        # print("Bid: ", round(Bid, 2), " Price: ", round(state_now[0]*100, 2), " Ask: ", round(Ask, 2))
 
 
         delta_b = state_now[0]*100 - Bid
@@ -84,22 +84,23 @@ class MyEnv(Env):
         if (rand_b <= prob_bid and rand_a > prob_ask):
             self.inventory += 1
             self.cash -= Bid
-            print("Hit Bid")
+            # print("Hit Bid")
 
         # we execute buy order only
         elif rand_b > prob_bid and rand_a <= prob_ask:
             self.inventory -= 1
             self.cash += Ask
-            print("Hit Ask")
+            # print("Hit Ask")
 
             
         # we execute both sell and buy orders
         elif rand_b <= prob_bid and rand_a <= prob_ask:
             self.cash = self.cash + Ask - Bid
-            print("Hit Both")
+            # print("Hit Both")
 
         else:
-            print("No hit")
+            # print("No hit")
+            pass
 
 
         self.time_left -= self.dt
