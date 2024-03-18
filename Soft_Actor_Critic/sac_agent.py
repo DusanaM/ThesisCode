@@ -6,7 +6,7 @@ from memory_buffer import ReplyBuffer
 from networks import ActorNetwork, ValueNetwork, CriticNetwork
 
 class SAC_Agent():
-    def __init__(self, input_dims, max_action = 1, alpha=0.001, beta = 0.003, gamma = 0.99, n_actions = 2, memory_size = 50000, tau = 0.005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2): 
+    def __init__(self, input_dims, alpha=0.001, beta = 0.003, gamma = 0.99, n_actions = 2, memory_size = 50000, tau = 0.005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2, env=None): 
         # reward scaling is how are we going to account for the entropy in the framework - we scale the rewards in the critic loss function
     
         self.gamma = gamma
@@ -15,7 +15,7 @@ class SAC_Agent():
         self.n_actions = n_actions
         
         self.memory = ReplyBuffer(memory_size, input_dims, n_actions)
-        self.actor = ActorNetwork(alpha, input_dims, max_action)
+        self.actor = ActorNetwork(alpha, input_dims, max_action = env.action_space.high, min_action = env.action_space.low)
         self.critic1 = CriticNetwork(beta, input_dims, n_actions, layer1, layer2, name='critic1')
         self.critic2 = CriticNetwork(beta, input_dims, n_actions, layer1, layer2, name='critic2')
         self.val = ValueNetwork(beta, input_dims, layer1, layer2, name='value')

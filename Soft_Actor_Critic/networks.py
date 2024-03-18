@@ -107,13 +107,14 @@ class ValueNetwork(nn.Module): # estimates the value of a particular state or se
 # --------------------------------------------------------------------------------------------------------------------------------------------
 
 class ActorNetwork(nn.Module):
-    def __init__(self, alpha, input_dims, max_action, fc1_dims=256, fc2_dims=256, n_actions=2, name='actor',chkpt_dir='tmp/sac'):
+    def __init__(self, alpha, input_dims, max_action, min_action, fc1_dims=256, fc2_dims=256, n_actions=2, name='actor',chkpt_dir='tmp/sac'):
         super(ActorNetwork, self).__init__()
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
         self.max_action = max_action
+        self.min_action = min_action
         self.reprar_noise = 1e-6
 
         self.name = name
@@ -157,15 +158,27 @@ class ActorNetwork(nn.Module):
         # actions are the one that are sampled, and action are those that are "processed" futher
 
         # we get the action for our agent:
-        # action = T.tanh(actions) # tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
-        action = T.tanh(actions)*T.tensor(self.max_action) # tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
+            
+        # ------------- me trying smth: --------------------------------
+        # print("whuhuhuhu: ", actions)
+        # action_range = T.tensor(self.max_action - self.min_action, device=self.device, dtype=T.float32)
+        # action = T.tanh(actions)
+        # action = 0.5 * (action_range * action + action_range) +  T.tensor(self.min_action, device=self.device, dtype=T.float32)
+
+
+        # action = action.to(self.device)
+        # action = action.detach().cpu().numpy()
+
+        # ------------- me trying smth end --------------------------------
+
+        action = T.tanh(actions)*T.tensor(0.5*(self.max_action-self.min_action)) +  T.tensor(0.5*(self.max_action+self.min_action))# tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
         # and mulituplying it with max_action scales it up afterwards
         # we do this since max_action could easly have a value beyond -1 +1
         action.to(self.device)
 
-        # this is for the calculation of our loss function, it doesnt go in the calculation of what action to take but the loss function for updating the weights of our deep NN
-        # log_probs = probs.log_prob(actions) - T.log(1-action.pow(2) + self.reprar_noise) # this is the formula from the paper: https://arxiv.org/pdf/1812.05905.pdf
-        # log_probs = log_probs.sum(1, keepdim = True)
+        # print("typeeeee: ", type(action))
+
+
 
         # print("action that I pick but not process yet: ", action, " end")
 
