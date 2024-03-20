@@ -13,7 +13,7 @@ class MyEnv(Env):
 
     #    self.action_space = Box(96.0, 104.0, (1,))
        # a1 is reservation price and a2 is the spread
-       self.action_space = Box(low=np.array([0.94, 1.0]), high=np.array([1.0, 1.0]), dtype=np.float32)
+       self.action_space = Box(low=np.array([0.0, 0.0]), high=np.array([1, 1]), dtype=np.float32)
     #    self.action_space = Box(low=np.array([96.0]), high=np.array([104.0]), dtype=np.float32)
     #    print(type(self.action_space))
 
@@ -51,22 +51,36 @@ class MyEnv(Env):
        self.reward_total = 0
        self.done = False
 
+       self.Bid = []
+       self.Ask = []
+
    def update_state_based_on_spreads(self, state_now, a1, a2):
         # Update self.s, the internal state, based on a1 and a2.
         # implements p(s_{t+1} | s_t, a_t)
         # a2 = 1.5
 
         # print("I recieve action: ", a1, a2)
+        # print("I receive action: {:.6f}, {:.6f}".format(a1, a2))
 
-        a1 = 103.0*a1
-        a2 = 2*a2
+
+        # a1 = 100*(a1 +1)
+        # a1 = a1
+        # a2 = (a2) * 1.49 
 
         # print("I transform action: ", a1, a2)
+        # print("I transform action: {:.6f}, {:.6f}".format(a1, a2))
 
-        Bid = ( (a1) - a2/2)
-        Ask = ((a1) + a2/2) 
+        # Mid = 100*(1 + a1*0.04)
+
+        # Bid = ( Mid - (a2*6)/2)
+        Bid = state_now[0]*100*(1 + a1*0.02)
+        # Ask = ((Mid) + (a2*6)/2)
+        Ask = state_now[0]*100*(1 + a2*0.02)
+        self.Bid.append(Bid)
+        self.Ask.append(Ask)
 
         # print("Bid: ", round(Bid, 2), " Price: ", round(state_now[0]*100, 2), " Ask: ", round(Ask, 2))
+        # print()
 
 
         delta_b = state_now[0]*100 - Bid
@@ -123,6 +137,7 @@ class MyEnv(Env):
         change_in_PnL = PnL_next - self.PnL_now
         reward = change_in_PnL - risk_penalty
         self.reward_total += reward
+        # print("reward total now: ", self.reward_total)
 
         self.state_now = state_next
         self.PnL_now = PnL_next

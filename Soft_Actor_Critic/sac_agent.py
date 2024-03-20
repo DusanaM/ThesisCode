@@ -6,7 +6,7 @@ from memory_buffer import ReplyBuffer
 from networks import ActorNetwork, ValueNetwork, CriticNetwork
 
 class SAC_Agent():
-    def __init__(self, input_dims, alpha=0.01, beta = 0.01, gamma = 0.99, memory_size = 10000, tau = 0.005, layer1 = 512 , layer2 = 512, batch_size = 512, reward_scale = 2, env=None): 
+    def __init__(self, input_dims, alpha=0.01, beta = 0.01, gamma = 0.99, memory_size = 50000, tau = 0.0005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2, env=None): 
         # reward scaling is how are we going to account for the entropy in the framework - we scale the rewards in the critic loss function
     
         self.gamma = gamma
@@ -25,11 +25,17 @@ class SAC_Agent():
         self.scale = reward_scale
         self.update_pars(tau = 1) # come back to this!
 
+    # def pick_action(self, observation):
+    #     state = T.Tensor([observation]).to(self.actor.device) # convert observation to pythorch sensor and send it to the device
+    #     action, _ = self.actor.normal_sample(state, reparametrize = False) # we dont include the noise
+    #     # here action is array of actions cuz we are dealing with a continuous action space
+    #     return (action.cpu().detach().numpy()[0]) # we extract and the selected action as np array
+        
     def pick_action(self, observation):
-        state = T.Tensor(observation).to(self.actor.device) # convert observation to pythorch sensor and send it to the device
-        action, _ = self.actor.normal_sample(state, reparametrize = False) # we dont include the noise
-        # here action is array of actions cuz we are dealing with a continuous action space
-        return abs(action.cpu().detach().numpy()) # we extract and the selected action as np array
+        state = T.Tensor([observation]).to(self.actor.device)
+        actions, _ = self.actor.normal_sample(state, reparametrize=False)
+
+        return actions.cpu().detach().numpy()[0]
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.store_transition(state, action, reward, next_state, done)

@@ -34,6 +34,8 @@ class CriticNetwork(nn.Module):
         # how nn.Linear works: nn.Linear(in_features, out_features, bias=True), in_features is how many nodes are in the previous layer, and out_features are how many nodes are there now?
         self.fc1 = nn.Linear(self.input_dims[0] + n_actions, self.fc1_dims) # here we assume that input_dims[0] corresponds to the state
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims) 
+        self.fc3 = nn.Linear(self.fc2_dims, self.fc2_dims) 
+        self.fc4 = nn.Linear(self.fc2_dims, self.fc2_dims) 
         self.q = nn.Linear(self.fc2_dims, 1) 
 
         # Overall what just happend is that the input to NN is state and action(s) at that state (input_dims[0] + n_actions)
@@ -48,6 +50,10 @@ class CriticNetwork(nn.Module):
         action_value = self.fc1(T.cat([state, action], dim=1))
         action_value = F.relu(action_value) # activation function
         action_value = self.fc2(action_value)
+        action_value = F.relu(action_value)
+        action_value = self.fc3(action_value)
+        action_value = F.relu(action_value)
+        action_value = self.fc4(action_value)
         action_value = F.relu(action_value)
         q = self.q(action_value)
         return q
@@ -77,6 +83,8 @@ class ValueNetwork(nn.Module): # estimates the value of a particular state or se
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+        self.fc3 = nn.Linear(self.fc1_dims, self.fc2_dims)
+        self.fc4 = nn.Linear(self.fc1_dims, self.fc2_dims)
         self.V = nn.Linear(self.fc2_dims, 1)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
@@ -88,6 +96,10 @@ class ValueNetwork(nn.Module): # estimates the value of a particular state or se
         state_value = self.fc1(state)
         state_value = F.relu(state_value) # activation function
         state_value = self.fc2(state_value)
+        state_value = F.relu(state_value)
+        state_value = self.fc3(state_value)
+        state_value = F.relu(state_value)
+        state_value = self.fc4(state_value)
         state_value = F.relu(state_value)
         V = self.V(state_value)
         return V
@@ -123,6 +135,8 @@ class ActorNetwork(nn.Module):
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+        self.fc3 = nn.Linear(self.fc2_dims, self.fc2_dims)
+        self.fc4 = nn.Linear(self.fc2_dims, self.fc2_dims)
         self.mu = nn.Linear(self.fc2_dims, self.n_actions) # each of the possible actions in 1 time step
         self.sigma = nn.Linear(self.fc2_dims, self.n_actions)
 
@@ -135,65 +149,91 @@ class ActorNetwork(nn.Module):
         probability = F.relu(probability) # activation function
         probability = self.fc2(probability)
         probability = F.relu(probability)
+        probability = self.fc3(probability)
+        probability = F.relu(probability)
+        probability = self.fc4(probability)
+        probability = F.relu(probability)
 
         mu = self.mu(probability)
         sigma = self.sigma(probability)
 
         # sigma = T.clamp(sigma, min=self.reprar_noise, max=1) # in paper they use -20 and 2; the clamp function restricts the values of the tensor to be within a specified range
-        sigma = T.clamp(sigma, min=self.reprar_noise) # in paper they use -20 and 2; the clamp function restricts the values of the tensor to be within a specified range
+        sigma = T.clamp(sigma, min=self.reprar_noise, max = 2) # in paper they use -20 and 2; the clamp function restricts the values of the tensor to be within a specified range
 
         return mu, sigma
     
     # write about why is it the normal and not some other distribution!
-    def normal_sample(self, state, reparametrize=True): # there are 2 sample functions for the N dist: one gives a sample and the other gives the sample plus some noise (thats when we say reparametrize=True)
-        # print("state that i put in feed_forward to get mu and sigma: ", state)
+    # def normal_sample(self, state, reparametrize=True): # there are 2 sample functions for the N dist: one gives a sample and the other gives the sample plus some noise (thats when we say reparametrize=True)
+    #     # print("state that i put in feed_forward to get mu and sigma: ", state)
         
+    #     mu, sigma = self.feed_forward(state)
+    #     # print("mu, sigma = ", mu, sigma)
+    #     probs = Normal(mu, sigma)
+
+    #     if reparametrize:
+    #         actions = probs.rsample() # this is with noise
+    #     else:
+    #         actions = probs.sample() # this is without the noise
+
+    #     # actions are the one that are sampled, and action are those that are "processed" futher
+
+    #     # we get the action for our agent:
+            
+    #     # ------------- me trying smth: --------------------------------
+    #     # print("whuhuhuhu: ", actions)
+    #     # action_range = T.tensor(self.max_action - self.min_action, device=self.device, dtype=T.float32)
+    #     # action = T.tanh(actions)
+    #     # action = 0.5 * (action_range * action + action_range) +  T.tensor(self.min_action, device=self.device, dtype=T.float32)
+
+
+    #     # action = action.to(self.device)
+    #     # action = action.detach().cpu().numpy()
+
+    #     # ------------- me trying smth end --------------------------------
+
+    #     # action = T.tanh(actions)*T.tensor(0.5*(self.max_action-self.min_action)) +  T.tensor(0.5*(self.max_action+self.min_action))# tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
+    #     action = (T.tanh(actions))*T.tensor(self.max_action)
+    #     # action = abs(T.tanh(actions))
+        
+    #     # and mulituplying it with max_action scales it up afterwards
+    #     # we do this since max_action could easly have a value beyond -1 +1
+    #     action.to(self.device)
+
+    #     # print("typeeeee: ", type(action))
+
+
+
+    #     # print("action that I pick but not process yet: ", action, " end")
+
+    #     log_probs = probs.log_prob(actions)
+    #     log_probs -= T.log(1-action.pow(2) + self.reprar_noise)
+    #     log_probs = log_probs.sum(dim=-1, keepdim = True)
+
+
+    #     return action, log_probs # The action is the final decision made by the policy (2dim) and log_probs represents the logarithm of the probabilities associated with the sampled action, and it is used for calculating the loss during training
+    
+    def normal_sample(self, state, reparametrize=True):
         mu, sigma = self.feed_forward(state)
-        # print("mu, sigma = ", mu, sigma)
-        probs = Normal(mu, sigma)
+        probabilities = Normal(mu, sigma)
+
+        # print("mu, sigma: ", mu, sigma)
 
         if reparametrize:
-            actions = probs.rsample() # this is with noise
+            actions = probabilities.rsample()
         else:
-            actions = probs.sample() # this is without the noise
+            actions = probabilities.sample()
+        # print("__________________________________________________________________: ", actions)
+        # action = T.tanh(actions)*T.tensor(self.max_action).to(self.device)
+        # action = T.tanh(actions)*T.tensor(0.5*(self.max_action-self.min_action)) +  T.tensor(0.5*(self.max_action+self.min_action))# tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
+        # action = T.tensor(actions)*T.tensor(self.max_action).to(self.device)
+        action = T.tanh(actions)*T.tensor(self.max_action).to(self.device)
+        # print("hereeeeeeeeeeeeeeeee: ", action)
+        log_probs = probabilities.log_prob(actions)
+        log_probs -= T.log(1-action.pow(2)+self.reprar_noise)
+        log_probs = log_probs.sum(1, keepdim=True)
 
-        # actions are the one that are sampled, and action are those that are "processed" futher
+        return action, log_probs
 
-        # we get the action for our agent:
-            
-        # ------------- me trying smth: --------------------------------
-        # print("whuhuhuhu: ", actions)
-        # action_range = T.tensor(self.max_action - self.min_action, device=self.device, dtype=T.float32)
-        # action = T.tanh(actions)
-        # action = 0.5 * (action_range * action + action_range) +  T.tensor(self.min_action, device=self.device, dtype=T.float32)
-
-
-        # action = action.to(self.device)
-        # action = action.detach().cpu().numpy()
-
-        # ------------- me trying smth end --------------------------------
-
-        action = T.tanh(actions)*T.tensor(0.5*(self.max_action-self.min_action)) +  T.tensor(0.5*(self.max_action+self.min_action))# tanh squashes the values to be within the range [-1, 1]. It's commonly used in the context of continuous control tasks to ensure that the output actions are within the range
-        # action = abs(T.tanh(actions))*T.tensor(self.max_action)
-        # action = abs(T.tanh(actions))
-        
-        # and mulituplying it with max_action scales it up afterwards
-        # we do this since max_action could easly have a value beyond -1 +1
-        action.to(self.device)
-
-        # print("typeeeee: ", type(action))
-
-
-
-        # print("action that I pick but not process yet: ", action, " end")
-
-        log_probs = probs.log_prob(actions)
-        log_probs -= T.log(1-action.pow(2) + self.reprar_noise)
-        log_probs = log_probs.sum(dim=-1, keepdim = True)
-
-
-        return action, log_probs # The action is the final decision made by the policy (2dim) and log_probs represents the logarithm of the probabilities associated with the sampled action, and it is used for calculating the loss during training
-    
     def save_chkpt(self): # saves the current state of NN, its parameters/weights
         # Save the current state of the neural network to a checkpoint file
         # The state here includes the parameters/weights of each layer
