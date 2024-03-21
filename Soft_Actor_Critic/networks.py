@@ -35,7 +35,6 @@ class CriticNetwork(nn.Module):
         self.fc1 = nn.Linear(self.input_dims[0] + n_actions, self.fc1_dims) # here we assume that input_dims[0] corresponds to the state
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims) 
         self.fc3 = nn.Linear(self.fc2_dims, self.fc2_dims) 
-        self.fc4 = nn.Linear(self.fc2_dims, self.fc2_dims) 
         self.q = nn.Linear(self.fc2_dims, 1) 
 
         # Overall what just happend is that the input to NN is state and action(s) at that state (input_dims[0] + n_actions)
@@ -52,8 +51,6 @@ class CriticNetwork(nn.Module):
         action_value = self.fc2(action_value)
         action_value = F.relu(action_value)
         action_value = self.fc3(action_value)
-        action_value = F.relu(action_value)
-        action_value = self.fc4(action_value)
         action_value = F.relu(action_value)
         q = self.q(action_value)
         return q
@@ -84,7 +81,6 @@ class ValueNetwork(nn.Module): # estimates the value of a particular state or se
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
         self.fc3 = nn.Linear(self.fc1_dims, self.fc2_dims)
-        self.fc4 = nn.Linear(self.fc1_dims, self.fc2_dims)
         self.V = nn.Linear(self.fc2_dims, 1)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
@@ -98,8 +94,6 @@ class ValueNetwork(nn.Module): # estimates the value of a particular state or se
         state_value = self.fc2(state_value)
         state_value = F.relu(state_value)
         state_value = self.fc3(state_value)
-        state_value = F.relu(state_value)
-        state_value = self.fc4(state_value)
         state_value = F.relu(state_value)
         V = self.V(state_value)
         return V
@@ -136,7 +130,6 @@ class ActorNetwork(nn.Module):
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
         self.fc3 = nn.Linear(self.fc2_dims, self.fc2_dims)
-        self.fc4 = nn.Linear(self.fc2_dims, self.fc2_dims)
         self.mu = nn.Linear(self.fc2_dims, self.n_actions) # each of the possible actions in 1 time step
         self.sigma = nn.Linear(self.fc2_dims, self.n_actions)
 
@@ -150,8 +143,6 @@ class ActorNetwork(nn.Module):
         probability = self.fc2(probability)
         probability = F.relu(probability)
         probability = self.fc3(probability)
-        probability = F.relu(probability)
-        probability = self.fc4(probability)
         probability = F.relu(probability)
 
         mu = self.mu(probability)

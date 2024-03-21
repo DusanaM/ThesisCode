@@ -70,11 +70,11 @@ class MyEnv(Env):
         # print("I transform action: ", a1, a2)
         # print("I transform action: {:.6f}, {:.6f}".format(a1, a2))
 
-        # Mid = 100*(1 + a1*0.04)
+        # Mid = state_now[0]*100*(1 + a1*0.02)
 
-        # Bid = ( Mid - (a2*6)/2)
+        # Bid = ( Mid - (a2*4)/2)
         Bid = state_now[0]*100*(1 + a1*0.02)
-        # Ask = ((Mid) + (a2*6)/2)
+        # Ask = ((Mid) + (a2*4)/2)
         Ask = state_now[0]*100*(1 + a2*0.02)
         self.Bid.append(Bid)
         self.Ask.append(Ask)

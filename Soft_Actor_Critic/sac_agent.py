@@ -5,10 +5,19 @@ import torch.nn.functional as F
 from memory_buffer import ReplyBuffer
 from networks import ActorNetwork, ValueNetwork, CriticNetwork
 
+
+
 class SAC_Agent():
-    def __init__(self, input_dims, alpha=0.01, beta = 0.01, gamma = 0.99, memory_size = 50000, tau = 0.0005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2, env=None): 
+    def __init__(self, input_dims, alpha=0.01, beta = 0.01, gamma = 0.9, memory_size = 50000, tau = 0.0005, layer1 = 256 , layer2 = 256, batch_size = 256, reward_scale = 2, env=None): 
         # reward scaling is how are we going to account for the entropy in the framework - we scale the rewards in the critic loss function
-    
+        SEED = 25  # You can choose any integer value for the seed
+        np.random.seed(SEED)
+        T.manual_seed(SEED)
+        T.cuda.manual_seed(SEED)  # If you're using CUDA
+        T.backends.cudnn.deterministic = True  # Ensure reproducibility when using CUDA
+
+
+
         self.gamma = gamma
         self.tau = tau
         self.batch_size = batch_size
@@ -88,6 +97,8 @@ class SAC_Agent():
 
         action = T.tensor(action, dtype = T.float).to(self.actor.device) 
         reward = T.tensor(reward, dtype = T.float).to(self.actor.device) 
+        # normalize the reward:
+        reward = (reward - reward.mean()) / (reward.std() + 1e-8)
         state = T.tensor(state, dtype = T.float).to(self.actor.device) 
         next_state = T.tensor(next_state, dtype = T.float).to(self.actor.device) 
         done = T.tensor(done).to(self.actor.device) 

@@ -30,14 +30,21 @@ class ReplyBuffer():
 
     def sample_buffer(self, batch_size): # batch_size is how many experiences we want to use in each iteration of training
         max_memory_available = min(self.memory_counter, self.memory_size) # this is how much memory we have available (so it is what we have stored (the counter) but it cannot be greater than max what we can store: memory_size)
-        #batch = min(batch, max_memory_available)
-        batch = np.random.choice(max_memory_available, batch_size) # pick a rand numbers up to *max_memory_available*, *batch_size* times 
+        batch = min(batch_size, max_memory_available)
+        
+        
+        # batch = np.random.choice(max_memory_available, batch_size) # pick a rand numbers up to *max_memory_available*, *batch_size* times 
+        # batch = max_memory_available
 
-        states = self.state_memory[batch]
-        next_states = self.next_state_memory[batch]
-        actions = self.action_memory[batch]
-        rewards = self.reward_memory[batch]
-        dones = self.terminal_memory[batch] # checks if any of the states were terminating states
+
+        # if self.memory_counter <batch_size:
+        #     batch = self.memory_counter
+
+        states = self.state_memory[:batch]
+        next_states = self.next_state_memory[:batch]
+        actions = self.action_memory[:batch]
+        rewards = self.reward_memory[:batch]
+        dones = self.terminal_memory[:batch] # checks if any of the states were terminating states
         
         return states, next_states, actions, rewards, dones
 
