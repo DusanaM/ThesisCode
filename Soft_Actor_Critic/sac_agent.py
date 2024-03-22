@@ -105,7 +105,11 @@ class SAC_Agent():
 
         # we compute the values of all the states and all next states
         value = self.val.feed_forward(state).view(-1)
-        value_next = self.target_val.feed_forward(next_state).view(-1)
+        # value_next = self.target_val.feed_forward(next_state).view(-1)
+        value_next = self.target_val.feed_forward(next_state).squeeze()
+
+        print("value_next: ", value_next.shape)
+        print("done: ", done.shape)
 
         # for the 'done' states we say that next state value is equal to 0 because this is the terminal state and there is no next state so value of the next state is 0
         value_next[done] = 0.0 

@@ -32,7 +32,9 @@ class CriticNetwork(nn.Module):
         # we incorporate the the action right from the very beginning of the input to the NN
         # here self.fc1_dims is the number of neurons or units in the first fully connected layer
         # how nn.Linear works: nn.Linear(in_features, out_features, bias=True), in_features is how many nodes are in the previous layer, and out_features are how many nodes are there now?
-        self.fc1 = nn.Linear(self.input_dims[0] + n_actions, self.fc1_dims) # here we assume that input_dims[0] corresponds to the state
+        self.fc1 = nn.Linear(*[self.input_dims[0], self.input_dims[1] + n_actions], self.fc1_dims) # here we assume that input_dims[0] corresponds to the state
+        # *[self.input_dims[0], self.input_dims[1] + n_actions] is 5 in original code
+        print("BEFORE 5, now: ", *[self.input_dims[0], self.input_dims[1] + n_actions])
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims) 
         self.fc3 = nn.Linear(self.fc2_dims, self.fc2_dims) 
         self.q = nn.Linear(self.fc2_dims, 1) 
@@ -46,7 +48,15 @@ class CriticNetwork(nn.Module):
         self.to(self.device) # we want to send our entire network to our device
 
     def feed_forward(self, state, action):
-        action_value = self.fc1(T.cat([state, action], dim=1))
+        # sizes of state and action:
+        print("state size: ", state.size())
+        print("action size: ", action.size())
+
+        print("BEFORE: torch.Size([28, 5]) and now: ", T.cat((state, action), dim = 2).size())
+
+
+
+        action_value = self.fc1(T.cat([state, action], dim=2)) # in original code: [128, 5] and 128 was the batch size
         action_value = F.relu(action_value) # activation function
         action_value = self.fc2(action_value)
         action_value = F.relu(action_value)
@@ -78,7 +88,9 @@ class ValueNetwork(nn.Module): # estimates the value of a particular state or se
         self.chkpt_dir = chkpt_dir
         self.chkpt_file = os.path.join(self.chkpt_dir, name + '_sac')
 
-        self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
+        print("heererereee: ", self.input_dims[1])
+
+        self.fc1 = nn.Linear(self.input_dims[1], self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
         self.fc3 = nn.Linear(self.fc1_dims, self.fc2_dims)
         self.V = nn.Linear(self.fc2_dims, 1)
@@ -127,7 +139,7 @@ class ActorNetwork(nn.Module):
         self.chkpt_dir = chkpt_dir
         self.chkpt_file = os.path.join(self.chkpt_dir, name + '_sac')
 
-        self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
+        self.fc1 = nn.Linear(self.input_dims[1], self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
         self.fc3 = nn.Linear(self.fc2_dims, self.fc2_dims)
         self.mu = nn.Linear(self.fc2_dims, self.n_actions) # each of the possible actions in 1 time step

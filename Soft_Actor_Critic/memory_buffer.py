@@ -11,12 +11,11 @@ class ReplyBuffer():
         self.memory_counter = 0 # keeps track of the first available memory
         self.idx = 0
 
-        self.state_memory = np.zeros((self.memory_size, *input_shape)) # input_shape is just how many features describes our state
+        self.state_memory = np.zeros((self.memory_size,  *input_shape)) # input_shape is just how many features describes our state
         self.next_state_memory = np.zeros((self.memory_size, *input_shape)) 
-        self.action_memory = np.zeros((self.memory_size, n_actions)) 
-        self.reward_memory = np.zeros(self.memory_size)
-        
-        self.terminal_memory = np.zeros(self.memory_size, dtype=bool) # dont get this
+        self.action_memory = np.zeros((self.memory_size, input_shape[0], n_actions)) 
+        self.reward_memory = np.zeros((self.memory_size, input_shape[0]))
+        self.terminal_memory = np.zeros((self.memory_size, input_shape[0]), dtype=bool) # dont get this
 
     def store_transition(self, state, action, reward, next_state, done): # done is terminal flag
         self.idx = self.memory_counter % self.memory_size  # first available index to store it so when memory_counter goes over (>=) memory_size, then we go from start e.g. 101 % 100 = 1
