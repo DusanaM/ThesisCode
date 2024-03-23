@@ -32,7 +32,7 @@ class CriticNetwork(nn.Module):
         # we incorporate the the action right from the very beginning of the input to the NN
         # here self.fc1_dims is the number of neurons or units in the first fully connected layer
         # how nn.Linear works: nn.Linear(in_features, out_features, bias=True), in_features is how many nodes are in the previous layer, and out_features are how many nodes are there now?
-        self.fc1 = nn.Linear(*[self.input_dims[0], self.input_dims[1] + n_actions], self.fc1_dims) # here we assume that input_dims[0] corresponds to the state
+        self.fc1 = nn.Linear(*(self.input_dims[0], self.input_dims[1] + n_actions), self.fc1_dims) # here we assume that input_dims[0] corresponds to the state
         # *[self.input_dims[0], self.input_dims[1] + n_actions] is 5 in original code
         print("BEFORE 5, now: ", *[self.input_dims[0], self.input_dims[1] + n_actions])
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims) 
@@ -52,7 +52,8 @@ class CriticNetwork(nn.Module):
         print("state size: ", state.size())
         print("action size: ", action.size())
 
-        print("BEFORE: torch.Size([28, 5]) and now: ", T.cat((state, action), dim = 2).size())
+        # print("BEFORE: torch.Size([28, 5]) and now: ", T.cat((state, action), dim = 2).size())
+        print("BEFORE: torch.Size([28, 5]) and now: ", T.cat([state, action], dim = 2).size())
 
 
 
@@ -88,7 +89,7 @@ class ValueNetwork(nn.Module): # estimates the value of a particular state or se
         self.chkpt_dir = chkpt_dir
         self.chkpt_file = os.path.join(self.chkpt_dir, name + '_sac')
 
-        print("heererereee: ", self.input_dims[1])
+        # print("heererereee: ", self.input_dims[1])
 
         self.fc1 = nn.Linear(self.input_dims[1], self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
