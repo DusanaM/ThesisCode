@@ -29,6 +29,7 @@ class MyEnv(Env):
        self.PnL_now = 0
        self.cash = 0
        self.inventory = 0
+       self.inventory_array = []
        self.reward_total = 0
        self.time_left = 1
        self.done = False
@@ -47,6 +48,7 @@ class MyEnv(Env):
        self.PnL_now = 0
        self.cash = 0
        self.inventory = 0
+       self.inventory_array = []
        self.time_left = 1
        self.reward_total = 0
        self.done = False
@@ -70,12 +72,12 @@ class MyEnv(Env):
         # print("I transform action: ", a1, a2)
         # print("I transform action: {:.6f}, {:.6f}".format(a1, a2))
 
-        # Mid = state_now[0]*100*(1 + a1*0.02)
+        # res_price = state_now[0]*100*(1 + a1*0.002)
 
-        # Bid = ( Mid - (a2*4)/2)
-        Bid = state_now[0]*100*(1 + a1*0.02)
-        # Ask = ((Mid) + (a2*4)/2)
-        Ask = state_now[0]*100*(1 + a2*0.02)
+        # Bid = ( res_price - (a2*2)/2)
+        Bid = state_now[0]*100*(1 + a1*0.015)
+        # Ask = ((res_price) + (a2*2)/2)
+        Ask = state_now[0]*100*(1 + a2*0.015)
         self.Bid.append(Bid)
         self.Ask.append(Ask)
 
@@ -97,12 +99,14 @@ class MyEnv(Env):
         # we execute sell order only
         if (rand_b <= prob_bid and rand_a > prob_ask):
             self.inventory += 1
+            self.inventory_array.append(self.inventory)
             self.cash -= Bid
             # print("Hit Bid")
 
         # we execute buy order only
         elif rand_b > prob_bid and rand_a <= prob_ask:
             self.inventory -= 1
+            self.inventory_array.append(self.inventory)
             self.cash += Ask
             # print("Hit Ask")
 
@@ -110,10 +114,12 @@ class MyEnv(Env):
         # we execute both sell and buy orders
         elif rand_b <= prob_bid and rand_a <= prob_ask:
             self.cash = self.cash + Ask - Bid
+            self.inventory_array.append(self.inventory)
             # print("Hit Both")
 
         else:
             # print("No hit")
+            self.inventory_array.append(self.inventory)
             pass
 
 
