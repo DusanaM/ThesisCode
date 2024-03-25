@@ -18,15 +18,20 @@ class MyEnv(Env):
     #    print(type(self.action_space))
 
 
-       self.s0 = s0
        self.sigma = sigma
        self.dt = dt
        self.N_prices = N_prices
        self.A = A
        self.k = k
 
+       
+       self.s0 = s0
+       self.s = np.zeros(self.N_prices)
+
        self.state_now = None
        self.PnL_now = 0
+       self.PnL_array = []
+       self.PnL_array.append(0)
        self.cash = 0
        self.inventory = 0
        self.inventory_array = []
@@ -46,6 +51,10 @@ class MyEnv(Env):
 
        self.state_now = (self.s0/100, 1, 0) # random initial state: (s0, time_left, inventory)
        self.PnL_now = 0
+       self.PnL_array = []
+       self.PnL_array.append(0)
+
+
        self.cash = 0
        self.inventory = 0
        self.inventory_array = []
@@ -147,6 +156,8 @@ class MyEnv(Env):
 
         self.state_now = state_next
         self.PnL_now = PnL_next
+
+        self.PnL_array.append(self.PnL_now)
 
         done = self.done
 
